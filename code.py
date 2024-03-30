@@ -1,39 +1,43 @@
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, mean_absolute_error , r2_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
-# Load your stock data (make sure it contains features and target variable)
-# For example, let's say you have a CSV file named 'stock_data.csv' with columns 'feature1', 'feature2', ..., 'target'
-stock_data = pd.read_csv('data.csv')
+# Load your dengue prediction data (make sure it contains features and target variable)
+# For example, let's say you have a CSV file named 'dengue_data.csv' with columns 'feature1', 'feature2', ..., 'target'
+dengue_data = pd.read_csv('dataset.csv')
 
 # Split the data into features and target variable
-X = stock_data[['Low', 'High', 'Open']]  # Features
+X = dengue_data[['Gender', 'Age','NS1', 'IgG', 'IgM', 'Area', 'AreaType', 'HouseType', 'District'  ]]  # Features
+y = dengue_data['Outcome']                       # Target variable
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Initialize linear regression model
-model = LinearRegression()
+# Assuming 'X_train' and 'X_test' contain your features
+# Let's say 'gender' is a categorical variable in your dataset
+# You need to convert it into numerical values using one-hot encoding
+X_train_encoded = pd.get_dummies(X_train)  # Perform one-hot encoding on training data
+X_test_encoded = pd.get_dummies(X_test)    # Perform one-hot encoding on testing data
 
-# Train the model
-model.fit(X_train, y_train)
+
+# Initialize random forest classifier
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Train the classifier
+clf.fit(X_train_encoded, y_train)
 
 # Make predictions
-predictions = model.predict(X_test)
+predictions = clf.predict(X_test_encoded)
 
-# Evaluate the model
-mse = mean_squared_error(y_test, predictions)
-mae = mean_absolute_error(y_test, predictions)
-rmse = np.sqrt( mean_squared_error(y_test, predictions))
-r2 = r2_score(y_test, predictions)
-print("Mean Squared Error:", mse)
-print("Mean Absolute Error:", mae)
-print("Root Mean Squared Error:", rmse)
-print("R Squared:", r2)
+# Evaluate the classifier
+accuracy = accuracy_score(y_test, predictions)
+print("Accuracy:", accuracy)
 
-# You can also print coefficients and intercept
-print("Coefficients:", model.coef_)
-print("Intercept:", model.intercept_)
+# Print classification report
+print("Classification Report:")
+print(classification_report(y_test, predictions))
 
+# Print confusion matrix
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, predictions))
